@@ -1,15 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
-import { useGetMovieQuery } from '../../services/TMDB';
-import { AiFillClockCircle, AiFillLike } from 'react-icons/ai';
+import { useGetMovieQuery, useGetProvidersQuery } from '../../services/TMDB';
+import {
+  AiFillClockCircle,
+  AiOutlineFile,
+  AiOutlineUser,
+  AiFillLike,
+  AiOutlineInfo,
+  AiOutlineInfoCircle,
+} from 'react-icons/ai';
 
 const MovieInformation = () => {
-  let tabs = ['Tab 1', 'Tab 2', 'Tab 3'];
+  const [activeClass, setActiveClass] = useState(1);
+
+  useEffect(() => {
+    setActiveClass(0);
+  }, []);
+
   const { id } = useParams();
   const { data, isFetching, error } = useGetMovieQuery(id);
-  console.log(data);
+  const { currentData } = useGetProvidersQuery(id);
+
+  console.log(currentData);
+  let tabs = [
+    {
+      name: 'Description',
+      icon: <AiOutlineFile />,
+      description: data?.overview,
+    },
+    { name: 'Cast', icon: <AiOutlineUser />, description: data?.credits.cast },
+    { name: 'Info', icon: <AiOutlineInfoCircle />, description: 'prova3' },
+  ];
   if (isFetching) {
     return (
       <div className="flex flex-col gap-y-3 h-[80vh] justify-center items-center">
@@ -25,17 +48,38 @@ const MovieInformation = () => {
 
   return (
     <div>
-      <div className="bg-base-300 rounded-lg p-6 md:flex md:flex-row flex-col">
-        <div className="md:w-[40%]">
-          <img
-            src={`https://image.tmdb.org/t/p/w500${data?.poster_path}`}
-            alt={data?.title}
-            className="rounded-lg w-full shadow-lg "
-          />
+      <div className="rounded-lg p-6 md:flex md:flex-row flex-col">
+        <div className="md:w-[35%] 2xl:w-[25%] bg-base-300 h-max p-4 rounded-lg">
+          <div className=" object-cover    ">
+            <img
+              src={`https://image.tmdb.org/t/p/w500${data?.poster_path}`}
+              alt={data?.title}
+              className="rounded-lg shadow-lg h-min w-full  mx-auto md:mx-0  "
+            />
+          </div>
+          <div>
+            <div>
+              {currentData?.results?.IT && currentData.results.IT.flatrate ? (
+                <div className="flex gap-3 justify-center mt-4 max-w-max mx-auto ">
+                  {currentData?.results?.IT?.flatrate.map((provider) => (
+                    <div className=" bg-base-100 p-1 rounded-full  ">
+                      <img
+                        src={`https://image.tmdb.org/t/p/w500${provider.logo_path}`}
+                        alt=""
+                        className="rounded-full w-[40px] "
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div></div>
+              )}
+            </div>
+          </div>
         </div>
-        <div className="md:w-[60%]">
-          <div className="px-6">
-            <h4 className="bg-green-500 w-[100px] text-center text-white rounded-full">
+        <div className="md:w-[65%] 2xl:w-[70%] my-auto mt-8 md:mt-0  ">
+          <div className="md:pl-6   ">
+            <h4 className="bg-green-500 max-w-max px-4 text-center text-white rounded-full">
               {data?.status}
             </h4>
             <h1 className="text-3xl text-white mt-6">{data?.title}</h1>
@@ -51,10 +95,49 @@ const MovieInformation = () => {
               </div>
             </div>
             <div class="divider"></div>
-            <div class="tabs tabs-boxed">
+            <div class="tabs tabs-boxed max-w-max">
               {tabs.map((tab, i) => (
-                <a class="tab">{tab}</a>
+                <button
+                  onClick={() => setActiveClass(i)}
+                  class={`${
+                    activeClass === i
+                      ? 'bg-[#DC1A28] text-white rounded-lg'
+                      : ''
+                  } tab gap-1`}
+                >
+                  {tabs[i].icon}
+                  {tabs[i].name}
+                </button>
               ))}
+            </div>
+            <div>
+              {typeof tabs[activeClass].description === 'string' ? (
+                <p className="p-1 mt-3  max-h-[270px] h-[250px] overflow-y-scroll scrollbar-thumb-scroll scrollbar-thin scrollbar-track-transparent">
+                  {tabs[activeClass].description}
+                </p>
+              ) : (
+                <div className="flex space-x-5 mt-4 pb-4 mb-4  overflow-x-scroll scrollbar-thumb-scroll scrollbar-thin scrollbar-track-transparent">
+                  {tabs[activeClass].description
+                    .map((memeber) => (
+                      <div className=" bg-base-100 p-2 rounded-lg ">
+                        <img
+                          src={
+                            memeber.profile_path
+                              ? `https://image.tmdb.org/t/p/w500/${memeber.profile_path}`
+                              : 'https://www.fillmurray.com/200/300'
+                          }
+                          alt=""
+                          className="w-full min-w-[5em] rounded-lg"
+                        />
+                        <p className="text-sm mt-2">{memeber.name}</p>
+                        <p className="text-xs opacity-50">
+                          {memeber.character.split(' ')[0]}
+                        </p>
+                      </div>
+                    ))
+                    .slice(0, 8)}
+                </div>
+              )}
             </div>
           </div>
         </div>

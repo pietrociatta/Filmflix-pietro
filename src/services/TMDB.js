@@ -37,13 +37,23 @@ export const tmdbApi = createApi({
         return `movie/popular?page=${page}&api_key=${tmdbApiKey}&language=it-IT`;
       },
       //Getmovie
+      //https://api.themoviedb.org/3/movie/{movie_id}/watch/providers?api_key=<<api_key>>
     }),
     getMovie: builder.query({
       query: (id) =>
         `/movie/${id}?append_to_response=videos,credits&api_key=${tmdbApiKey}&language=it-IT`,
     }),
+
+    getProviders: builder.query({
+      query: (id) =>
+        `/movie/${id}/watch/providers?api_key=${tmdbApiKey}&language=it-IT`,
+    }),
   }),
 });
 
-export const { useGetMoviesQuery, useGetGenresQuery, useGetMovieQuery } =
-  tmdbApi;
+export const {
+  useGetMoviesQuery,
+  useGetGenresQuery,
+  useGetMovieQuery,
+  useGetProvidersQuery,
+} = tmdbApi;
